@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regime Selection Simulator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #faf9f7;
+    --fg: #1a1a1a;
+    --muted: #8a8a8a;
+    --accent: #2d5a8e;
+    --accent2: #c44e3f;
+    --green: #2d7d4f;
+    --red: #c44e3f;
+    --grid: #e8e6e2;
+    --panel-bg: #ffffff;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    --radius: 6px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    padding: 1.5rem;
+  }
+
+  header {
+    max-width: 960px;
+    margin: 0 auto 1.2rem;
+    text-align: center;
+  }
+
+  header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.2rem; }
+  header p { font-size: 0.8rem; color: var(--muted); font-style: italic; }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  /* Animation buttons */
+  .anim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+
+  .anim-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--grid);
+    border-radius: var(--radius);
+    background: var(--panel-bg);
+    color: var(--fg);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    line-height: 1.5;
+  }
+
+  .anim-btn:hover { border-color: var(--accent); background: hsla(210,50%,55%,0.04); }
+  .anim-btn.active { border-color: var(--accent); background: hsla(210,50%,55%,0.08); }
+  .anim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .anim-btn .btn-title {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    margin-bottom: 0.15rem;
+  }
+
+  .anim-btn .btn-desc {
+    color: var(--muted);
+    font-size: 0.65rem;
+    font-weight: 400;
+  }
+
+  /* Progress bar */
+  .progress-bar-container {
+    background: var(--panel-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 0.7rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+    min-width: 90px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--grid);
+    border-radius: 2px;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.05s linear;
+  }
+
+  .stop-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--grid);
+    border-radius: var(--radius);
+    background: var(--panel-bg);
+    cursor: pointer;
+    color: var(--muted);
+  }
+
+  .stop-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Charts */
+  .charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+  }
+
+  .chart-panel {
+    background: var(--panel-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1rem 1rem 0.6rem;
+  }
+
+  .chart-panel h2 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+  }
+
+  .chart-panel canvas { width: 100%; height: 260px; display: block; }
+
+  .legend {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 0.5rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    flex-wrap: wrap;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 0.3rem; }
+  .legend-swatch { width: 16px; height: 3px; border-radius: 1px; }
+
+  /* Controls */
+  .controls-panel {
+    background: var(--panel-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.2rem;
+  }
+
+  .control-group { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .control-group label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .control-group label span.val { font-size: 0.8rem; color: var(--fg); font-weight: 500; }
+
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px;
+    background: var(--grid); border-radius: 2px; outline: none; cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--panel-bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2); cursor: pointer;
+  }
+
+  input[type="range"]:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .insight-indicator {
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-top: 0.3rem;
+    transition: all 0.3s ease;
+  }
+
+  .insight-explicit { background: hsla(145,40%,50%,0.1); color: var(--green); border: 1px solid hsla(145,40%,50%,0.25); }
+  .insight-implicit { background: hsla(5,50%,50%,0.1); color: var(--red); border: 1px solid hsla(5,50%,50%,0.25); }
+
+  .footer-note {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 0.3rem;
+  }
+
+  @media (max-width: 700px) {
+    .charts { grid-template-columns: 1fr; }
+    .controls-panel { grid-template-columns: 1fr; }
+    .anim-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Regime Selection Simulator</h1>
+  <p>Theorem 2 &amp; Corollary 2 — Insight, Proceduralization, and Divergent Lock-in</p>
+</header>
+
+<div class="container">
+
+  <div class="anim-grid">
+    <button class="anim-btn" id="btnExplicit" onclick="runAnimation('explicit')">
+      <span class="btn-title">&#9654; Explicit Insight</span>
+      <span class="btn-desc">Strong initial insight &rarr; &sigma; compression locks into R<sub>d</sub></span>
+    </button>
+    <button class="anim-btn" id="btnImplicit" onclick="runAnimation('implicit')">
+      <span class="btn-title">&#9654; Implicit Insight</span>
+      <span class="btn-desc">Weak initial insight &rarr; &sigma; compression locks into R<sub>a</sub></span>
+    </button>
+    <button class="anim-btn" id="btnDivergent" onclick="runAnimation('divergent')">
+      <span class="btn-title">&#9654; Divergent Lock-in</span>
+      <span class="btn-desc">Same mechanism, opposite outcomes &mdash; Corollary 2</span>
+    </button>
+    <button class="anim-btn" id="btnScaffold" onclick="runAnimation('scaffold')">
+      <span class="btn-title">&#9654; Scaffolding</span>
+      <span class="btn-desc">supp(&Lambda;) shrinks early &rarr; implicit becomes explicit &rarr; lock-in</span>
+    </button>
+  </div>
+
+  <div class="progress-bar-container" id="progressContainer" style="display:none;">
+    <span class="progress-label" id="progressLabel">t = 0 / 200</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="stop-btn" id="stopBtn" onclick="stopAnimation()">Stop</button>
+  </div>
+
+  <div class="charts">
+    <div class="chart-panel">
+      <h2>Threshold Density (PDF)</h2>
+      <canvas id="pdfCanvas"></canvas>
+      <div class="legend" id="pdfLegend">
+        <div class="legend-item"><div class="legend-swatch" style="background:hsla(210,50%,55%,0.4)"></div>initial &sigma;</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--accent)"></div>current &sigma;</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(0,0,0,0.15);height:8px;width:8px"></div>supp(&Lambda;)</div>
+      </div>
+    </div>
+    <div class="chart-panel">
+      <h2>Regime-Entry Probability (CDF)</h2>
+      <canvas id="cdfCanvas"></canvas>
+      <div class="legend" id="cdfLegend">
+        <div class="legend-item"><div class="legend-swatch" style="background:hsla(210,50%,55%,0.4)"></div>initial &sigma;</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:var(--accent)"></div>current &sigma;</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-panel" id="controlsPanel">
+    <div class="control-group">
+      <label>&mu; <span class="val" id="muVal">3.5</span></label>
+      <input type="range" id="muSlider" min="0.5" max="7" step="0.1" value="3.5">
+      <label>&sigma; <span class="val" id="sigmaVal">1.80</span></label>
+      <input type="range" id="sigmaSlider" min="0.15" max="3.0" step="0.05" value="1.80">
+    </div>
+    <div class="control-group">
+      <label>&sigma;<sub>I</sub> <span class="val" id="sigmaIVal">2.00</span></label>
+      <input type="range" id="sigmaISlider" min="0.5" max="3.5" step="0.05" value="2.00">
+      <label>supp upper <span class="val" id="suppVal">5.0</span></label>
+      <input type="range" id="suppSlider" min="1" max="8" step="0.1" value="5.0">
+    </div>
+    <div class="control-group">
+      <label>supp lower <span class="val" id="suppLVal">0.0</span></label>
+      <input type="range" id="suppLSlider" min="0" max="4" step="0.1" value="0">
+      <div class="insight-indicator insight-explicit" id="insightIndicator">
+        Explicit Insight
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">Kim (2026), "From Compliance to Competence" — 25th Carroll Round Conference</p>
+</div>
+
+<script>
+// --- Canvas refs ---
+const pdfCanvas = document.getElementById('pdfCanvas');
+const cdfCanvas = document.getElementById('cdfCanvas');
+const pdfCtx = pdfCanvas.getContext('2d');
+const cdfCtx = cdfCanvas.getContext('2d');
+
+// --- Slider refs ---
+const sliders = {
+  mu: document.getElementById('muSlider'),
+  sigma: document.getElementById('sigmaSlider'),
+  sigmaI: document.getElementById('sigmaISlider'),
+  supp: document.getElementById('suppSlider'),
+  suppL: document.getElementById('suppLSlider'),
+};
+const vals = {
+  mu: document.getElementById('muVal'),
+  sigma: document.getElementById('sigmaVal'),
+  sigmaI: document.getElementById('sigmaIVal'),
+  supp: document.getElementById('suppVal'),
+  suppL: document.getElementById('suppLVal'),
+};
+const insightIndicator = document.getElementById('insightIndicator');
+const progressContainer = document.getElementById('progressContainer');
+const progressLabel = document.getElementById('progressLabel');
+const progressFill = document.getElementById('progressFill');
+
+// --- Math ---
+function erf(x) {
+  const a1=0.254829592, a2=-0.284496736, a3=1.421413741, a4=-1.453152027, a5=1.061405429, p=0.3275911;
+  const sign = x<0 ? -1 : 1;
+  x = Math.abs(x);
+  const t = 1/(1+p*x);
+  const y = 1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return sign*y;
+}
+
+function phi(z) { return 0.5*(1+erf(z/Math.SQRT2)); }
+function normalPDF(x, mu, sigma) {
+  const z=(x-mu)/sigma;
+  return Math.exp(-0.5*z*z)/(sigma*Math.sqrt(2*Math.PI));
+}
+function Gfn(lambda, mu, sigma) { return phi((mu-lambda)/sigma); }
+
+// --- Plot config ---
+const P = { xMin:-0.5, xMax:9, padL:45, padR:15, padT:14, padB:30 };
+function xToPx(x,w) { return P.padL+(x-P.xMin)/(P.xMax-P.xMin)*(w-P.padL-P.padR); }
+function yToPxPDF(y,h,yMax) { return P.padT+(h-P.padT-P.padB)*(1-y/yMax); }
+function yToPxCDF(y,h) { return P.padT+(h-P.padT-P.padB)*(1-y); }
+
+function setupCanvas(canvas) {
+  const dpr = window.devicePixelRatio||1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width*dpr;
+  canvas.height = rect.height*dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  return {w:rect.width, h:rect.height};
+}
+
+function drawAxes(ctx,w,h,isCDF) {
+  const yBase = isCDF ? yToPxCDF(0,h) : h-P.padB;
+  ctx.strokeStyle='#ccc'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(P.padL,yBase); ctx.lineTo(w-P.padR,yBase); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(P.padL,P.padT); ctx.lineTo(P.padL,yBase); ctx.stroke();
+
+  ctx.fillStyle='#999'; ctx.font='10px "JetBrains Mono",monospace'; ctx.textAlign='center';
+  for(let x=0;x<=8;x+=2){
+    const px=xToPx(x,w);
+    ctx.beginPath();ctx.moveTo(px,yBase);ctx.lineTo(px,yBase+4);ctx.stroke();
+    ctx.fillText(x,px,yBase+14);
+  }
+  ctx.font='italic 10px "Source Serif 4",Georgia,serif';
+  ctx.fillText('\u03BB',w/2,h-2);
+
+  if(isCDF){
+    ctx.textAlign='right'; ctx.font='10px "JetBrains Mono",monospace';
+    for(let y=0;y<=1;y+=0.5){
+      const py=yToPxCDF(y,h);
+      ctx.beginPath();ctx.moveTo(P.padL-4,py);ctx.lineTo(P.padL,py);ctx.stroke();
+      ctx.fillText(y.toFixed(1),P.padL-7,py+3);
+    }
+  }
+}
+
+function drawSupp(ctx,w,h,sL,sU,isCDF) {
+  const x1=xToPx(sL,w), x2=xToPx(sU,w);
+  const yT=P.padT, yB=isCDF?yToPxCDF(0,h):h-P.padB;
+  ctx.fillStyle='rgba(0,0,0,0.035)';
+  ctx.fillRect(x1,yT,x2-x1,yB-yT);
+  ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(x1,yT);ctx.lineTo(x1,yB);ctx.moveTo(x2,yT);ctx.lineTo(x2,yB);ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawMu(ctx,w,h,mu,isCDF,color) {
+  const px=xToPx(mu,w), yT=P.padT, yB=isCDF?yToPxCDF(0,h):h-P.padB;
+  ctx.strokeStyle=color||'rgba(0,0,0,0.3)'; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+  ctx.beginPath();ctx.moveTo(px,yT);ctx.lineTo(px,yB);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=color||'#666'; ctx.font='italic 11px "Source Serif 4",Georgia,serif'; ctx.textAlign='center';
+  ctx.fillText('\u03BC',px,yT-3);
+}
+
+function drawCurve(ctx,w,h,fn,color,lw) {
+  const steps=300, dx=(P.xMax-P.xMin)/steps;
+  ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=lw;
+  for(let i=0;i<=steps;i++){
+    const x=P.xMin+i*dx, px=xToPx(x,w), py=fn(x);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+}
+
+function drawYLabel(ctx,w,h,text) {
+  ctx.save(); ctx.fillStyle='#999';
+  ctx.font='italic 10px "Source Serif 4",Georgia,serif';
+  ctx.translate(10,h/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.fillText(text,0,0); ctx.restore();
+}
+
+// --- Render state ---
+let state = { mu:3.5, sigma:1.8, sigmaI:2.0, suppL:0, suppU:5.0 };
+// For divergent mode
+let divergentState = null;
+
+function renderNormal() {
+  const {mu,sigma,sigmaI,suppL,suppU} = state;
+
+  // PDF
+  const {w:pw,h:ph} = setupCanvas(pdfCanvas);
+  pdfCtx.clearRect(0,0,pw,ph);
+  const peakMax = Math.max(normalPDF(mu,mu,sigma), normalPDF(mu,mu,sigmaI))*1.15;
+  drawAxes(pdfCtx,pw,ph,false);
+  drawSupp(pdfCtx,pw,ph,suppL,suppU,false);
+  drawMu(pdfCtx,pw,ph,mu,false);
+  drawCurve(pdfCtx,pw,ph, x=>yToPxPDF(normalPDF(x,mu,sigmaI),ph,peakMax), 'hsla(210,50%,55%,0.4)', 1.5);
+  drawCurve(pdfCtx,pw,ph, x=>yToPxPDF(normalPDF(x,mu,sigma),ph,peakMax), '#2d5a8e', 2.2);
+  drawYLabel(pdfCtx,pw,ph,'threshold density');
+
+  // CDF
+  const {w:cw,h:ch} = setupCanvas(cdfCanvas);
+  cdfCtx.clearRect(0,0,cw,ch);
+  drawAxes(cdfCtx,cw,ch,true);
+  drawSupp(cdfCtx,cw,ch,suppL,suppU,true);
+  drawMu(cdfCtx,cw,ch,mu,true);
+  drawCurve(cdfCtx,cw,ch, x=>yToPxCDF(Gfn(x,mu,sigmaI),ch), 'hsla(210,50%,55%,0.4)', 1.5);
+  drawCurve(cdfCtx,cw,ch, x=>yToPxCDF(Gfn(x,mu,sigma),ch), '#2d5a8e', 2.2);
+  drawYLabel(cdfCtx,cw,ch,'G(\u03BB)');
+
+  // Insight indicator
+  if(suppU < mu) {
+    insightIndicator.className='insight-indicator insight-explicit';
+    insightIndicator.textContent='Explicit Insight';
+  } else {
+    insightIndicator.className='insight-indicator insight-implicit';
+    insightIndicator.textContent='Implicit Insight';
+  }
+}
+
+function renderDivergent(sA, sB) {
+  const sigmaI = sA.sigmaI;
+  const suppL = sA.suppL, suppU = sA.suppU;
+  const sigmaA = sA.sigma, muA = sA.mu;
+  const sigmaB = sB.sigma, muB = sB.mu;
+
+  // PDF
+  const {w:pw,h:ph} = setupCanvas(pdfCanvas);
+  pdfCtx.clearRect(0,0,pw,ph);
+  const peakMax = Math.max(
+    normalPDF(muA,muA,sigmaA), normalPDF(muB,muB,sigmaB),
+    normalPDF(muA,muA,sigmaI), normalPDF(muB,muB,sigmaI)
+  )*1.15;
+  drawAxes(pdfCtx,pw,ph,false);
+  drawSupp(pdfCtx,pw,ph,suppL,suppU,false);
+  // Ghost A
+  drawCurve(pdfCtx,pw,ph, x=>yToPxPDF(normalPDF(x,muA,sigmaI),ph,peakMax), 'hsla(145,40%,50%,0.25)', 1);
+  // Ghost B
+  drawCurve(pdfCtx,pw,ph, x=>yToPxPDF(normalPDF(x,muB,sigmaI),ph,peakMax), 'hsla(5,50%,50%,0.25)', 1);
+  // Mu lines
+  drawMu(pdfCtx,pw,ph,muA,false,'rgba(45,125,79,0.5)');
+  drawMu(pdfCtx,pw,ph,muB,false,'rgba(196,78,63,0.5)');
+  // Current A (green)
+  drawCurve(pdfCtx,pw,ph, x=>yToPxPDF(normalPDF(x,muA,sigmaA),ph,peakMax), '#2d7d4f', 2.2);
+  // Current B (red)
+  drawCurve(pdfCtx,pw,ph, x=>yToPxPDF(normalPDF(x,muB,sigmaB),ph,peakMax), '#c44e3f', 2.2);
+  drawYLabel(pdfCtx,pw,ph,'threshold density');
+
+  // CDF
+  const {w:cw,h:ch} = setupCanvas(cdfCanvas);
+  cdfCtx.clearRect(0,0,cw,ch);
+  drawAxes(cdfCtx,cw,ch,true);
+  drawSupp(cdfCtx,cw,ch,suppL,suppU,true);
+  drawMu(cdfCtx,cw,ch,muA,true,'rgba(45,125,79,0.5)');
+  drawMu(cdfCtx,cw,ch,muB,true,'rgba(196,78,63,0.5)');
+  // Ghost A
+  drawCurve(cdfCtx,cw,ch, x=>yToPxCDF(Gfn(x,muA,sigmaI),ch), 'hsla(145,40%,50%,0.25)', 1);
+  // Ghost B
+  drawCurve(cdfCtx,cw,ch, x=>yToPxCDF(Gfn(x,muB,sigmaI),ch), 'hsla(5,50%,50%,0.25)', 1);
+  // Current A
+  drawCurve(cdfCtx,cw,ch, x=>yToPxCDF(Gfn(x,muA,sigmaA),ch), '#2d7d4f', 2.2);
+  // Current B
+  drawCurve(cdfCtx,cw,ch, x=>yToPxCDF(Gfn(x,muB,sigmaB),ch), '#c44e3f', 2.2);
+  drawYLabel(cdfCtx,cw,ch,'G(\u03BB)');
+
+  insightIndicator.className='insight-indicator insight-explicit';
+  insightIndicator.textContent='Divergent Lock-in';
+}
+
+// --- Slider sync ---
+function syncFromSliders() {
+  state.mu = parseFloat(sliders.mu.value);
+  state.sigma = parseFloat(sliders.sigma.value);
+  state.sigmaI = parseFloat(sliders.sigmaI.value);
+  state.suppU = parseFloat(sliders.supp.value);
+  state.suppL = parseFloat(sliders.suppL.value);
+  vals.mu.textContent = state.mu.toFixed(1);
+  vals.sigma.textContent = state.sigma.toFixed(2);
+  vals.sigmaI.textContent = state.sigmaI.toFixed(2);
+  vals.supp.textContent = state.suppU.toFixed(1);
+  vals.suppL.textContent = state.suppL.toFixed(1);
+}
+
+function syncToSliders() {
+  sliders.mu.value = state.mu;
+  sliders.sigma.value = state.sigma;
+  sliders.sigmaI.value = state.sigmaI;
+  sliders.supp.value = state.suppU;
+  sliders.suppL.value = state.suppL;
+  vals.mu.textContent = state.mu.toFixed(1);
+  vals.sigma.textContent = state.sigma.toFixed(2);
+  vals.sigmaI.textContent = state.sigmaI.toFixed(2);
+  vals.supp.textContent = state.suppU.toFixed(1);
+  vals.suppL.textContent = state.suppL.toFixed(1);
+}
+
+function manualUpdate() {
+  if(animRunning) return;
+  syncFromSliders();
+  renderNormal();
+}
+
+Object.values(sliders).forEach(s => s.addEventListener('input', manualUpdate));
+
+// --- Legends ---
+const defaultPdfLegend = `
+  <div class="legend-item"><div class="legend-swatch" style="background:hsla(210,50%,55%,0.4)"></div>initial &sigma;</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#2d5a8e"></div>current &sigma;</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(0,0,0,0.15);height:8px;width:8px"></div>supp(&Lambda;)</div>`;
+const defaultCdfLegend = `
+  <div class="legend-item"><div class="legend-swatch" style="background:hsla(210,50%,55%,0.4)"></div>initial &sigma;</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#2d5a8e"></div>current &sigma;</div>`;
+const divergentPdfLegend = `
+  <div class="legend-item"><div class="legend-swatch" style="background:#2d7d4f"></div>explicit (&mu;=5.0)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#c44e3f"></div>implicit (&mu;=2.5)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(0,0,0,0.15);height:8px;width:8px"></div>supp(&Lambda;)</div>`;
+const divergentCdfLegend = `
+  <div class="legend-item"><div class="legend-swatch" style="background:#2d7d4f"></div>explicit (&mu;=5.0)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#c44e3f"></div>implicit (&mu;=2.5)</div>`;
+
+function setLegends(mode) {
+  const pl = document.getElementById('pdfLegend');
+  const cl = document.getElementById('cdfLegend');
+  if(mode==='divergent') { pl.innerHTML=divergentPdfLegend; cl.innerHTML=divergentCdfLegend; }
+  else { pl.innerHTML=defaultPdfLegend; cl.innerHTML=defaultCdfLegend; }
+}
+
+// --- Animation ---
+let animRunning = false;
+let animFrame = null;
+
+// Timing: 25fps, phase1 = 1.0s mu intro, phase2 = 4.0s compression
+const FRAME_MS = 40;
+const F_INTRO = 25;     // 1.0s at 25fps
+const F_COMPRESS = 100;  // 4.0s at 25fps
+const F_TOTAL = F_INTRO + F_COMPRESS; // 125 frames
+const T_MAX = 200;       // logical episodes
+const T_PER_FRAME = T_MAX / F_COMPRESS; // 2 episodes per frame
+
+function setSliderState(disabled) {
+  Object.values(sliders).forEach(s => s.disabled = disabled);
+  document.querySelectorAll('.anim-btn').forEach(b => b.disabled = disabled && !b.classList.contains('active'));
+}
+
+function stopAnimation() {
+  animRunning = false;
+  if(animFrame) { clearTimeout(animFrame); animFrame=null; }
+  setSliderState(false);
+  progressContainer.style.display='none';
+  document.querySelectorAll('.anim-btn').forEach(b => { b.classList.remove('active'); b.disabled=false; });
+  setLegends('default');
+  syncFromSliders();
+  renderNormal();
+}
+
+function updateProgress(frame, logicalT) {
+  if(frame <= F_INTRO) {
+    progressLabel.textContent = `insight`;
+  } else {
+    progressLabel.textContent = `t = ${Math.round(logicalT)} / ${T_MAX}`;
+  }
+  progressFill.style.width = (frame/F_TOTAL*100)+'%';
+}
+
+// Ease-out for mu intro
+function easeOutCubic(t) { return 1 - Math.pow(1-t, 3); }
+
+function runAnimation(mode) {
+  if(animRunning) { stopAnimation(); return; }
+  animRunning = true;
+
+  let frame = 0;
+  let logicalT = 0;
+
+  const btn = document.getElementById({
+    explicit:'btnExplicit', implicit:'btnImplicit',
+    divergent:'btnDivergent', scaffold:'btnScaffold'
+  }[mode]);
+  document.querySelectorAll('.anim-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  setSliderState(true);
+  progressContainer.style.display='flex';
+
+  if(mode==='divergent') setLegends('divergent');
+  else setLegends('default');
+
+  // Initial params per mode
+  let params;
+  if(mode==='explicit') {
+    params = { muTarget:5.0, sigmaI:2.0, suppL:1.5, suppU:4.0 };
+  } else if(mode==='implicit') {
+    params = { muTarget:2.5, sigmaI:2.0, suppL:1.0, suppU:5.0 };
+  } else if(mode==='divergent') {
+    params = {
+      A: { muTarget:5.0, sigmaI:2.0, suppL:1.5, suppU:4.5 },
+      B: { muTarget:2.5, sigmaI:2.0, suppL:1.5, suppU:4.5 }
+    };
+  } else if(mode==='scaffold') {
+    params = {
+      muTarget:2.5, muCurrent:0, sigmaI:2.0, suppL:1.0,
+      suppU0:5.5, suppUMin:2.0, suppURestore:5.5
+    };
+  }
+
+  function step() {
+    if(!animRunning) return;
+    frame++;
+
+    const inIntro = frame <= F_INTRO;
+    const introFrac = Math.min(frame / F_INTRO, 1);
+    const compressFrame = inIntro ? 0 : (frame - F_INTRO);
+    const compressFrac = compressFrame / F_COMPRESS;
+
+    if(!inIntro) {
+      logicalT = compressFrame * T_PER_FRAME;
+    }
+
+    if(mode==='explicit' || mode==='implicit') {
+      const mu = inIntro ? params.muTarget * easeOutCubic(introFrac) : params.muTarget;
+      const sigma = inIntro ? params.sigmaI : params.sigmaI * (1 - 0.85 * compressFrac);
+
+      state.mu = mu;
+      state.sigma = Math.max(sigma, 0.15);
+      state.sigmaI = params.sigmaI;
+      state.suppL = params.suppL;
+      state.suppU = params.suppU;
+      syncToSliders();
+      renderNormal();
+
+    } else if(mode==='divergent') {
+      const muA = inIntro ? params.A.muTarget * easeOutCubic(introFrac) : params.A.muTarget;
+      const muB = inIntro ? params.B.muTarget * easeOutCubic(introFrac) : params.B.muTarget;
+      const sigmaVal = inIntro ? params.A.sigmaI : params.A.sigmaI * (1 - 0.85 * compressFrac);
+      const s = Math.max(sigmaVal, 0.15);
+
+      const sA = { mu:muA, sigma:s, sigmaI:params.A.sigmaI, suppL:params.A.suppL, suppU:params.A.suppU };
+      const sB = { mu:muB, sigma:s, sigmaI:params.B.sigmaI, suppL:params.B.suppL, suppU:params.B.suppU };
+      state.mu = sA.mu; state.sigma = sA.sigma; state.sigmaI = sA.sigmaI;
+      state.suppL = sA.suppL; state.suppU = sA.suppU;
+      syncToSliders();
+      renderDivergent(sA, sB);
+
+    } else if(mode==='scaffold') {
+      if(inIntro) {
+        // Phase 1: mu rises from 0 to target
+        params.muCurrent = params.muTarget * easeOutCubic(introFrac);
+        state.mu = params.muCurrent;
+        state.sigma = params.sigmaI;
+        state.sigmaI = params.sigmaI;
+        state.suppL = params.suppL;
+        state.suppU = params.suppU0;
+        syncToSliders();
+        renderNormal();
+      } else {
+        // Phase 2: compression + scaffolding + stochastic mu
+        const sigma = params.sigmaI * (1 - 0.85 * compressFrac);
+        const currentSigma = Math.max(sigma, 0.15);
+
+        // Scaffolding schedule:
+        // t=0..50: supp gradually decreases from suppU0 to suppUMin
+        // t=50..100: supp gradually restores from suppUMin to suppURestore
+        // t>100: supp stays at suppURestore
+        let suppU;
+        if(logicalT <= 50) {
+          const frac50 = logicalT / 50;
+          suppU = params.suppU0 + (params.suppUMin - params.suppU0) * frac50;
+        } else if(logicalT <= 100) {
+          const frac50 = (logicalT - 50) / 50;
+          suppU = params.suppUMin + (params.suppURestore - params.suppUMin) * frac50;
+        } else {
+          suppU = params.suppURestore;
+        }
+
+        // Stochastic mu updates: run T_PER_FRAME episodes per frame
+        const episodes = Math.round(T_PER_FRAME);
+        for(let e = 0; e < episodes; e++) {
+          const lambda = params.suppL + Math.random() * (suppU - params.suppL);
+          const gProb = Gfn(lambda, params.muCurrent, currentSigma);
+          if(Math.random() < gProb) {
+            params.muCurrent += 0.04;  // Rd success
+          } else {
+            params.muCurrent -= 0.012; // Ra
+          }
+          params.muCurrent = Math.max(0.3, Math.min(7.5, params.muCurrent));
+        }
+
+        state.mu = params.muCurrent;
+        state.sigma = currentSigma;
+        state.sigmaI = params.sigmaI;
+        state.suppL = params.suppL;
+        state.suppU = suppU;
+        syncToSliders();
+        renderNormal();
+      }
+    }
+
+    updateProgress(frame, logicalT);
+
+    if(frame >= F_TOTAL) {
+      animRunning = false;
+      setSliderState(false);
+      document.querySelectorAll('.anim-btn').forEach(b=>b.disabled=false);
+      return;
+    }
+
+    animFrame = setTimeout(step, FRAME_MS);
+  }
+
+  updateProgress(0, 0);
+  step();
+}
+
+// --- Init ---
+window.addEventListener('resize', ()=>{ if(!animRunning) renderNormal(); });
+syncFromSliders();
+renderNormal();
+</script>
+</body>
+</html>
