@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Yoon Kim — Decision Theory & Behavioral Economics</title>
+    <meta name="description" content="Academic page of Do Yoon Kim. Research in Decision Theory, Behavioral Economics, and Mechanism Design.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1a1a1a;
+            --paper: #faf9f6;
+            --accent: #8b0000;
+            --muted: #6b6b6b;
+            --rule: #d4d0c8;
+            --highlight: #f0ece4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 17px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'EB Garamond', 'Georgia', serif;
+            color: var(--ink);
+            background-color: var(--paper);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: var(--accent);
+            color: var(--paper);
+        }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 5rem 0 3rem;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        .name {
+            font-size: 2.4rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            margin-bottom: 0.3rem;
+        }
+
+        .name-kr {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            margin-bottom: 1.4rem;
+        }
+
+        .affiliation {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 400;
+            color: var(--muted);
+            letter-spacing: 0.02em;
+            line-height: 1.6;
+        }
+
+        .header-links {
+            margin-top: 1.2rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.03em;
+        }
+
+        .header-links a {
+            color: var(--accent);
+            text-decoration: none;
+            margin-right: 1.5rem;
+            transition: opacity 0.2s;
+        }
+
+        .header-links a:hover {
+            opacity: 0.7;
+        }
+
+        /* --- Sections --- */
+        section {
+            padding: 2.5rem 0;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        section:last-of-type {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- About --- */
+        .about p {
+            font-size: 1.05rem;
+            color: var(--ink);
+            margin-bottom: 1rem;
+        }
+
+        .about p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* --- Research Interests --- */
+        .interests {
+            font-size: 1rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* --- Papers --- */
+        .paper {
+            margin-bottom: 2rem;
+        }
+
+        .paper:last-child {
+            margin-bottom: 0;
+        }
+
+        .paper-title {
+            font-size: 1.08rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 0.3rem;
+        }
+
+        .paper-title a {
+            color: var(--ink);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .paper-title a:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        .paper-meta {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            color: var(--muted);
+            letter-spacing: 0.01em;
+            line-height: 1.6;
+        }
+
+        .paper-tag {
+            display: inline-block;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            padding: 0.15rem 0.55rem;
+            border-radius: 2px;
+            margin-right: 0.4rem;
+            position: relative;
+            top: -1px;
+        }
+
+        .tag-presented {
+            background: var(--highlight);
+            color: var(--accent);
+        }
+
+        .tag-review {
+            background: var(--highlight);
+            color: var(--muted);
+        }
+
+        .tag-wip {
+            background: transparent;
+            border: 1px solid var(--rule);
+            color: var(--muted);
+        }
+
+        /* --- CV Section --- */
+        .cv-link {
+            font-size: 1.05rem;
+        }
+
+        .cv-link a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid var(--accent);
+            padding-bottom: 1px;
+            transition: opacity 0.2s;
+        }
+
+        .cv-link a:hover {
+            opacity: 0.7;
+        }
+
+        .cv-updated {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 0.4rem;
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 2.5rem 0 4rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
+            color: var(--rule);
+            letter-spacing: 0.02em;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            html {
+                font-size: 16px;
+            }
+
+            header {
+                padding: 3.5rem 0 2.5rem;
+            }
+
+            .name {
+                font-size: 1.9rem;
+            }
+
+            .container {
+                padding: 0 1.4rem;
+            }
+
+            .header-links a {
+                display: inline-block;
+                margin-bottom: 0.3rem;
+            }
+        }
+
+        /* --- Subtle entrance --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header, section, footer {
+            animation: fadeIn 0.6s ease-out both;
+        }
+
+        section:nth-child(2) { animation-delay: 0.08s; }
+        section:nth-child(3) { animation-delay: 0.16s; }
+        section:nth-child(4) { animation-delay: 0.24s; }
+        section:nth-child(5) { animation-delay: 0.32s; }
+        footer { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <header>
+            <div class="name">Do Yoon Kim</div>
+            <div class="name-kr">김도윤</div>
+            <div class="affiliation">
+                Undergraduate in Business Administration<br>
+                Hanyang University ERICA
+            </div>
+            <div class="header-links">
+                <a href="#research">Research</a>
+                <a href="#cv">CV</a>
+                <a href="/cdn-cgi/l/email-protection#11687e64633f747c70787d517469707c617d743f727e7c">Contact</a>
+            </div>
+        </header>
+
+        <section class="about">
+            <div class="section-title">About</div>
+            <p>
+                I study how people make prosocial decisions when cognitive frameworks, 
+                not just incentives, are the binding constraint. My research introduces 
+                the regime-selection framework, which endogenizes the adoption of 
+                evaluative frames in individual decision-making, providing microfoundations 
+                for behavioral interventions that target competence rather than compliance.
+            </p>
+            <p>
+                My broader research program extends this foundation to collective welfare 
+                analysis and game-theoretic models of communicative coordination. I am also 
+                interested in applied domains where the regime-selection framework may prove 
+                fruitful, including creativity, innovation, and human–AI complementarity.
+            </p>
+        </section>
+
+        <section>
+            <div class="section-title">Research Interests</div>
+            <div class="interests">
+                Decision Theory &middot; Behavioral &amp; Information Economics &middot; 
+                Mechanism Design &middot; Capability Approach &middot; Ecological Rationality
+            </div>
+        </section>
+
+        <section id="research">
+            <div class="section-title">Working Papers</div>
+
+            <div class="paper">
+                <div class="paper-title">
+                    <a href="https://drive.google.com/file/d/1PSClQLV7p1kTQzKsFi3nyEjoAJsdAyfG/view?usp=drive_link">From Compliance to Competence: Regime Selection as a Microfoundation for Prosocial Boosting</a>
+                </div>
+                <div class="paper-meta">
+                    <span class="paper-tag tag-presented">Presented</span>
+                    25th Carroll Round Conference, Georgetown University, April 2026
+                </div>
+            </div>
+        </section>
+
+        <section id="cv">
+            <div class="section-title">Curriculum Vitae</div>
+            <div class="cv-link">
+                <a href="https://drive.google.com/file/d/1iiAic2q11cUCbRskxaxlOwTNlidpXM-0/view?usp=drive_link">Download CV (PDF) &darr;</a>
+            </div>
+            <div class="cv-updated">Last updated: March 2026</div>
+        </section>
+
+        <footer>
+            &copy; 2026 Do Yoon Kim
+ 
